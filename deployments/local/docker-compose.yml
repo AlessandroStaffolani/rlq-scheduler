@@ -1,0 +1,364 @@
+version: '2.3'
+
+services:
+#  rabbit:
+#    image: rabbitmq:management
+#    container_name: rabbit
+#    ports:
+#      - "5672:5672"  # we forward this port because it's useful for debugging
+#      - "15672:15672"
+#    environment:
+#      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - 6379:6379
+
+#  filebeat:
+#    image: docker.elastic.co/beats/filebeat:7.9.3
+#    container_name: filebeat
+#    volumes:
+#      - ../../docker/elk/filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml
+#      - ../../logs/agent:/var/log/agent
+#      - ../../logs/system_manager:/var/log/system_manager
+#      - ../../logs/task_broker:/var/log/celery/task_broker
+#      - ../../logs/task_generator:/var/log/task_generator
+#      - ../../logs/trajectory_collector:/var/log/trajectory_collector
+#      - ../../logs/worker:/var/log/celery/worker
+#    environment:
+#      ELK_HOST: astaffolani.imolab.it
+#      ELASTICSEARCH_HOSTS: astaffolani.imolab.it:9200
+#      ELASTICSEARCH_USERNAME: elastic
+#      ELASTICSEARCH_PASSWORD: pass1234
+#      ENV_HOST: localhost
+
+  system-manager:
+    build:
+      context: ../..
+      dockerfile: docker/system_manager/Dockerfile
+      args:
+        SERVER_USER: system_manager
+    image: service-broker/system_manager
+    container_name: system-manager
+    ports:
+      - 9092:9092
+    volumes:
+      - ../../config:/opt/service-broker/system_manager/config
+      - ../../logs:/opt/service-broker/system_manager/logs
+      - ../../results:/opt/service-broker/system_manager/results
+      - ../../service_broker:/opt/service-broker/system_manager/service_broker
+    environment:
+      SYSTEM_MANAGER_SERVER_MODULE: service_broker.system_manager.server
+      SYSTEM_MANAGER_SERVER_CONFIG_FILENAME: /opt/service-broker/system_manager/config/system_manager.yml
+      SYSTEM_MANAGER_MULTI_RUN_CONFIG_FILENAME: /opt/service-broker/system_manager/config/multi_run_config.yml
+      GLOBAL_CONFIG_FILENAME: /opt/service-broker/system_manager/config/global.yml
+      BROKER_SERVICE_SERVICE_HOST: redis
+    env_file:
+      - ../../.env
+    depends_on:
+      - redis
+      - agent
+      - task-generator
+      - trajectory-collector
+
+  task-generator:
+    build:
+      context: ../..
+      dockerfile: docker/task_generator/Dockerfile
+      args:
+        SERVER_USER: task_generator
+    image: service-broker/task_generator
+    container_name: task-generator
+    ports:
+      - 9093:9093
+    volumes:
+      - ../../config:/opt/service-broker/task_generator/config
+      - ../../logs:/opt/service-broker/task_generator/logs
+      - ../../service_broker:/opt/service-broker/task_generator/service_broker
+    environment:
+      TASK_GENERATOR_SERVER_MODULE: service_broker.task_generator.server
+      TASK_GENERATOR_SERVER_CONFIG_FILENAME: /opt/service-broker/task_generator/config/task_generator.yml
+      GLOBAL_CONFIG_FILENAME: /opt/service-broker/task_generator/config/global.yml
+      BROKER_SERVICE_SERVICE_HOST: redis
+    env_file:
+      - ../../.env
+    depends_on:
+      - redis
+
+  agent:
+    build:
+      context: ../..
+      dockerfile: docker/agent/Dockerfile
+      args:
+        SERVER_USER: agent
+    image: service-broker/agent
+    container_name: agent
+    ports:
+      - 9090:9090
+    volumes:
+      - ../../config:/opt/service-broker/agent/config
+      - ../../logs:/opt/service-broker/agent/logs
+      - ../../service_broker:/opt/service-broker/agent/service_broker
+    environment:
+      AGENT_SERVER_MODULE: service_broker.agent.server
+      AGENT_SERVER_CONFIG_FILENAME: /opt/service-broker/agent/config/agent.yml
+      GLOBAL_CONFIG_FILENAME: /opt/service-broker/agent/config/global.yml
+      BROKER_SERVICE_SERVICE_HOST: redis
+    env_file:
+      - ../../.env
+    depends_on:
+      - redis
+
+  trajectory-collector:
+    build:
+      context: ../..
+      dockerfile: docker/trajectory_collector/Dockerfile
+      args:
+        SERVER_USER: trajectory_collector
+    image: service-broker/trajectory_collector
+    container_name: trajectory-collector
+    ports:
+      - 9091:9091
+    volumes:
+      - ../../config:/opt/service-broker/trajectory_collector/config
+      - ../../data:/opt/service-broker/trajectory_collector/data
+      - ../../logs:/opt/service-broker/trajectory_collector/logs
+      - ../../service_broker:/opt/service-broker/trajectory_collector/service_broker
+    environment:
+      TC_SERVER_MODULE: service_broker.trajectory_collector.server
+      TC_SERVER_CONFIG_FILENAME: /opt/service-broker/trajectory_collector/config/trajectory_collector.yml
+      GLOBAL_CONFIG_FILENAME: /opt/service-broker/trajectory_collector/config/global.yml
+      BROKER_SERVICE_SERVICE_HOST: redis
+    env_file:
+      - ../../.env
+    depends_on:
+      - redis
+
+  flower:
+#    build:
+#      context: ../..
+#      dockerfile: docker/flower/Dockerfile
+    image: mher/flower:0.9.5 # service-broker/flower
+    container_name: flower
+    ports:
+      - 5555:5555
+    command: ["--broker=redis://redis:6379/1"]
+#    environment:
+#      BROKER_SERVICE_SERVICE_HOST: redis
+#      CELERY_REDIS_DB: 1
+    # network_mode: host
+    depends_on:
+      - redis
+      - task_broker
+      - worker_class_1
+      - worker_class_2
+      - worker_class_3
+      - worker_class_4
+      - worker_class_5
+      - worker_class_6
+
+  task_broker:
+    build:
+      context: ../..
+      dockerfile: docker/task_broker/Dockerfile
+      args:
+        CELERY_USER: developer
+    image: service-broker/task_broker
+    container_name: task_broker
+    environment:
+      CELERY_APP: service_broker
+      BROKER_SERVICE_SERVICE_HOST: redis
+      WORKER_NAME: task_broker
+      WORKER_QUEUES: main
+    env_file:
+      - ../../.env
+    volumes:
+      - ../../logs/task_broker:/var/log/celery
+      - ../../config:/opt/service-broker/task_broker/config
+      - ../../service_broker:/opt/service-broker/task_broker/service_broker
+    tty: false
+    # network_mode: host
+    depends_on:
+      - redis
+
+  worker_class_1:
+    build:
+      context: ../..
+      dockerfile: docker/worker/Dockerfile
+      args:
+        CELERY_USER: developer
+    image: service-broker/worker
+    container_name: worker_class_1
+    environment:
+      CELERY_APP: service_broker
+      RABBITMQ_SERVICE_SERVICE_HOST: rabbit
+      BROKER_SERVICE_SERVICE_HOST: redis
+      WORKER_NAME: worker_class_1
+      WORKER_QUEUES: worker_class_1
+    env_file:
+      - ../../.env
+    volumes:
+      - ../../config:/opt/service-broker/worker/config
+      - ../../logs/worker:/var/log/celery
+      - ../../service_broker:/opt/service-broker/worker/service_broker
+    tty: false
+    # network_mode: host
+    mem_limit: 100m
+    mem_reservation: 100m
+    cpus: "0.2"
+    cpu_count: 1
+    cpuset: "0"
+    depends_on:
+      - redis
+
+  worker_class_2:
+    build:
+      context: ../..
+      dockerfile: docker/worker/Dockerfile
+      args:
+        CELERY_USER: developer
+    image: service-broker/worker
+    container_name: worker_class_2
+    environment:
+      CELERY_APP: service_broker
+      RABBITMQ_SERVICE_SERVICE_HOST: rabbit
+      BROKER_SERVICE_SERVICE_HOST: redis
+      WORKER_NAME: worker_class_2
+      WORKER_QUEUES: worker_class_2
+    env_file:
+      - ../../.env
+    volumes:
+      - ../../config:/opt/service-broker/worker/config
+      - ../../logs/worker:/var/log/celery
+      - ../../service_broker:/opt/service-broker/worker/service_broker
+    tty: false
+    # network_mode: host
+    mem_limit: 128m
+    mem_reservation: 128m
+    cpus: "0.3"
+    cpu_count: 1
+    cpuset: "1"
+    depends_on:
+      - redis
+
+  worker_class_3:
+    build:
+      context: ../..
+      dockerfile: docker/worker/Dockerfile
+      args:
+        CELERY_USER: developer
+    image: service-broker/worker
+    container_name: worker_class_3
+    environment:
+      CELERY_APP: service_broker
+      RABBITMQ_SERVICE_SERVICE_HOST: rabbit
+      BROKER_SERVICE_SERVICE_HOST: redis
+      WORKER_NAME: worker_class_3
+      WORKER_QUEUES: worker_class_3
+    env_file:
+      - ../../.env
+    volumes:
+      - ../../logs/worker:/var/log/celery
+      - ../../config:/opt/service-broker/worker/config
+      - ../../service_broker:/opt/service-broker/worker/service_broker
+    tty: false
+    # network_mode: host
+    mem_limit: 180m
+    mem_reservation: 180m
+    cpus: "0.5"
+    cpu_count: 1
+    cpuset: "0"
+    depends_on:
+      - redis
+
+  worker_class_4:
+    build:
+      context: ../..
+      dockerfile: docker/worker/Dockerfile
+      args:
+        CELERY_USER: developer
+    image: service-broker/worker
+    container_name: worker_class_4
+    environment:
+      CELERY_APP: service_broker
+      RABBITMQ_SERVICE_SERVICE_HOST: rabbit
+      BROKER_SERVICE_SERVICE_HOST: redis
+      WORKER_NAME: worker_class_4
+      WORKER_QUEUES: worker_class_4
+    env_file:
+      - ../../.env
+    volumes:
+      - ../../logs/worker:/var/log/celery
+      - ../../config:/opt/service-broker/worker/config
+      - ../../service_broker:/opt/service-broker/worker/service_broker
+    tty: false
+    # network_mode: host
+    mem_limit: 128m
+    mem_reservation: 128m
+    cpus: "0.5"
+    cpu_count: 1
+    cpuset: "1"
+    depends_on:
+      - redis
+
+  worker_class_5:
+    build:
+      context: ../..
+      dockerfile: docker/worker/Dockerfile
+      args:
+        CELERY_USER: developer
+    image: service-broker/worker
+    container_name: worker_class_5
+    environment:
+      CELERY_APP: service_broker
+      RABBITMQ_SERVICE_SERVICE_HOST: rabbit
+      BROKER_SERVICE_SERVICE_HOST: redis
+      WORKER_NAME: worker_class_5
+      WORKER_QUEUES: worker_class_5
+    env_file:
+      - ../../.env
+    volumes:
+      - ../../logs/worker:/var/log/celery
+      - ../../config:/opt/service-broker/worker/config
+      - ../../service_broker:/opt/service-broker/worker/service_broker
+    tty: false
+    # network_mode: host
+    mem_limit: 260m
+    mem_reservation: 260m
+    cpus: "0.8"
+    cpu_count: 1
+    cpuset: "2"
+    depends_on:
+      - redis
+
+  worker_class_6:
+    build:
+      context: ../..
+      dockerfile: docker/worker/Dockerfile
+      args:
+        CELERY_USER: developer
+    image: service-broker/worker
+    container_name: worker_class_6
+    environment:
+      CELERY_APP: service_broker
+      RABBITMQ_SERVICE_SERVICE_HOST: rabbit
+      BROKER_SERVICE_SERVICE_HOST: redis
+      WORKER_NAME: worker_class_6
+      WORKER_QUEUES: worker_class_6
+    env_file:
+      - ../../.env
+    volumes:
+      - ../../logs/worker:/var/log/celery
+      - ../../config:/opt/service-broker/worker/config
+      - ../../service_broker:/opt/service-broker/worker/service_broker
+    tty: false
+    # network_mode: host
+    mem_limit: 512m
+    mem_reservation: 512m
+    cpus: "1"
+    cpu_count: 1
+    cpuset: "3"
+    depends_on:
+      - redis

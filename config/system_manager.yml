@@ -1,0 +1,27 @@
+---
+
+system_resources:
+  - agent
+  - trajectory_collector
+  - task_generator
+
+run_manager:
+  auto_start: false
+  auto_run: true
+  start_from: 0
+
+config_folder: config
+
+stats:
+  folder_path: results
+
+logger:
+  name: system_manager
+  level: 10  # 10=DEBUG, 20=INFO, 30=WARN, 40=ERROR
+  handlers:
+    - type: console
+      parameters: NULL
+    - type: file
+      parameters:
+        log_folder: system_manager
+        log_basepath: logs

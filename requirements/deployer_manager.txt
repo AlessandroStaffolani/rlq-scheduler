@@ -1,0 +1,6 @@
+kubernetes
+flask
+flask-restful
+requests
+gunicorn
+gevent

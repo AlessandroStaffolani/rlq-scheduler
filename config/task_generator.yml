@@ -1,0 +1,17 @@
+---
+
+task_generator:
+  is_local: false  # if false it means that TaskGenerator is deployed on docker or kubernetes
+  use_kube: false  # if true when possible it uses kubernetes port
+  random_seed: 2
+
+logger:
+  name: task_generator
+  level: 10  # 10=DEBUG, 20=INFO, 30=WARN, 40=ERROR
+  handlers:
+    - type: console
+      parameters: NULL
+    - type: file
+      parameters:
+        log_folder: task_generator
+        log_basepath: logs

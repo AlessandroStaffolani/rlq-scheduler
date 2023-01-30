@@ -1,0 +1,12 @@
+---
+
+logger:
+  name: agent
+  level: 10  # 10=DEBUG, 20=INFO, 30=WARN, 40=ERROR
+  handlers:
+    - type: console
+      parameters: NULL
+    - type: file
+      parameters:
+        log_folder: agent
+        log_basepath: logs

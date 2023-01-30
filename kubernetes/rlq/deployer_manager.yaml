@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: deployer-manager
+    app.kubernetes.io/instance: service
+    app.kubernetes.io/component: deployer-manager
+    app.kubernetes.io/part-of: deployer-manager
+  name: deployer-manager
+spec:
+  ports:
+  - name: deployer-manager
+    protocol: TCP
+    port: 9093
+  selector:
+    app.kubernetes.io/part-of: deployer-manager
+    app.kubernetes.io/name: deployer-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: deployer-manager-external
+    app.kubernetes.io/instance: service
+    app.kubernetes.io/component: deployer-manager
+    app.kubernetes.io/part-of: deployer-manager
+  name: deployer-manager-external
+spec:
+  type: NodePort
+  ports:
+  - name: deployer-manager-external
+    protocol: TCP
+    port: 9093
+    nodePort: 30093
+  selector:
+    app.kubernetes.io/part-of: deployer-manager
+    app.kubernetes.io/name: deployer-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: deployer-manager
+    app.kubernetes.io/instance: deployment
+    app.kubernetes.io/component: deployer-manager
+    app.kubernetes.io/part-of: deployer-manager
+  name: deployer-manager
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: deployer-manager
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: deployer-manager
+        app.kubernetes.io/instance: deployment
+        app.kubernetes.io/component: deployer-manager
+        app.kubernetes.io/part-of: deployer-manager
+    spec:
+      serviceAccountName: deployer-manager-sa
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+      - image: cloud.canister.io:5000/ale8193/deployer_manager
+        name: deployer-manager
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 9093
+        env:
+          - name: DM_SERVER_MODULE
+            value: rlq_scheduler.deployer_manager.server
+          - name: DM_SERVER_CONFIG_FILENAME
+            value: /opt/rlq/deployer_manager/config/deployer_manager.yml
+          - name: GLOBAL_CONFIG_FILENAME
+            value: /opt/rlq/deployer_manager/config/global.yml
+          - name: BROKER_SERVICE_SERVICE_HOST
+            value: redis.default
+        volumeMounts:
+          - name: global-config
+            mountPath: /opt/rlq/deployer_manager/config/global.yml
+            subPath: global.yml
+            readOnly: true
+          - name: deployer-manager-config
+            mountPath: /opt/rlq/deployer_manager/config/deployer_manager.yml
+            subPath: deployer_manager.yml
+            readOnly: true
+      volumes:
+        - name: global-config
+          configMap:
+            name: global-config
+        - name: deployer-manager-config
+          configMap:
+            name: deployer-manager-config
+      imagePullSecrets:
+        - name: docker-registry

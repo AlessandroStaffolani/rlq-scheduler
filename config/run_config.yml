@@ -1,0 +1,383 @@
+---
+
+global:
+  features_enabled:
+    waiting_time: true
+    execution_time: event  # possible values ["event", "result"]
+    context: false
+    agent_type:
+      name: double-dqn  # for available agents see agent.agent_parameters property below
+    expandable_pool: false
+    bootstrapping: false
+    trajectory_saving: false
+    evaluation: false
+    google_traces_mode: true
+    google_traces_time_multiplier: 10  # in the dataset 1 second is equivalent to 1 days, use the multiplier to rescale the value
+    replicas_normalization: true  # use the number of replicas to normalize the pool load feature
+
+  save_properties:
+    run_name_prefix: test
+    checkpoint_frequency: 5000
+    saving_mode: final-model  # available: "best-checkpoint" or "final-model"
+
+  penalties:
+    out_of_budget: -1000
+    task_failed: -100000
+
+  functions:
+    execution_cost:
+      type: value-based
+    reward_function:
+      type: waiting-time  # available types ["waiting-time, "execution-time", "execution-cost"]
+      extra_parameters: {}
+
+  state:
+    features:
+      task_class_type:
+        type: array
+        is_dummy: true
+        values: task_classes
+        is_worker_related: false
+        is_global: true
+      pool_load:
+        type: array
+        is_dummy: false
+        values: worker_classes
+        is_worker_related: false
+        is_global: true
+    time_window: 30
+
+  context:
+    features:
+      task_class_type:
+        type: array
+        is_dummy: true
+        values: task_classes  # will be recomputed based on the available tasks
+        is_worker_related: false
+        is_global: true
+      pool_load:
+        type: array
+        is_dummy: false
+        values: worker_classes
+        is_worker_related: false
+        is_global: true
+      action:
+        type: array
+        is_dummy: true
+        values: worker_classes  # will be recomputed based on the available tasks
+        is_worker_related: false
+        is_global: false
+#      resource_usage:
+#        type: array
+#        is_dummy: false
+#        values: worker_classes
+#        is_worker_related: false
+#        is_global: true
+#      task_frequency:
+#        type: array
+#        is_dummy: false
+#        values: task_classes
+#        is_worker_related: false
+#        is_global: true
+
+task_generator:
+  random_seed: 2
+  bootstrapping:
+    skip: 0
+    distribution: poisson_fixed
+    tasks_to_generate: 0
+    rate_per_interval: 60
+    rate_per_interval_range:
+      - 5
+      - 16  # not inclusive
+  tasks_to_generate:
+    - skip: 0  # skip task generation for the first `skip` tasks
+      distribution: poisson_fixed  # possible value ["none", "poisson_fixed", "poisson_variable"]
+      tasks_to_generate: 60  # how many tasks generate in total
+      rate_per_interval: 60  # tasks generated every interval, if distribution is "none" this value is ignored
+      rate_per_interval_range:  # discrete uniform distribution range used to compute the rate_per_interval for every interval in the "poisson_variable" distribution case
+        - 5
+        - 16  # not inclusive
+
+agent:
+  global:
+    action_space:  # the action space will be recomputed based on the worker classes available
+      - worker_class_1
+      - worker_class_2
+      - worker_class_3
+      - worker_class_4
+      - worker_class_5
+      - worker_class_6
+    load_model_config:
+      load: false
+      path: NULL
+    reward_multiplier:
+      value: 1
+      limit: NULL  # set the maximum value for the reward after multiplying the multiplier value. NULL for no limits
+    save_model_config:
+      enabled: true
+      folder: models
+    train: true
+    random_seed: 2
+
+  agents_parameters:
+    random:
+      name: Random
+    lin-ucb:
+      delta: 2
+    double-dqn:
+      experience_replay_capacity: 400
+      learning_rate: 0.001
+      gamma: 0.99
+      batch_size: 32
+      target_net_update_frequency: 300
+      epsilon:
+        type: linear-decay  # type can be ['scalar', 'linear-decay', 'exp-decay'] if scalar: parameters contains only 'value': <float>, if linear-decay: parameters contains: 'start': <float>, 'end': <float>, 'total': <int> if exp-decay: parameters contains: 'start': <float>, 'end': <float>, 'decay': <float>
+        parameters:
+          start: 0.6
+          end: 0.1
+          total: 120
+      optimizer: adam  # available optimizers: ['adam'], default: adam
+      network_config:
+        type: fully-connected # available: ['fully-connected', 'fc-diamond']
+        parameters:
+          hidden_layers: 3
+
+    lru: {}
+
+    e-pvm:
+      alpha: 1.5
+
+task_classes:
+#  fake_task:
+#    func_name: fake_task
+#    full_name: "rlq_scheduler.tasks.tasks.fake_task"
+#    waiting_cost: 1
+#    parameters_range:
+#      seconds:
+#        min: 10
+#        max: 11
+#  ram_task_small:
+#    func_name: ram_task
+#    full_name: "rlq_scheduler.tasks.tasks.ram_task"
+#    waiting_cost: 3.5
+#    parameters_range:
+#      n:
+#        min: 100
+#        max: 122
+#  ram_task_medium:
+#    func_name: ram_task
+#    full_name: "rlq_scheduler.tasks.tasks.ram_task"
+#    waiting_cost: 3.5
+#    parameters_range:
+#      n:
+#        min: 100
+#        max: 200
+  cpu_task_small:
+    func_name: cpu_task
+    full_name: "rlq_scheduler.tasks.tasks.cpu_task"
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30  # expressed in seconds
+        penalty: -1000
+      execution:
+        max: 5  # expressed in seconds
+        penalty: -1000
+    parameters_range:
+      n:
+        min: 1
+        max: 5
+      d:
+        min: 40
+        max: 60
+    capacity_usage:
+      cost: 1.5
+      cost_delta_min: -0.3
+      cost_delta_max: 0.3
+  cpu_task_medium:
+    func_name: cpu_task
+    full_name: "rlq_scheduler.tasks.tasks.cpu_task"
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30  # expressed in seconds
+        penalty: -1000
+      execution:
+        max: 15  # expressed in seconds
+        penalty: -1000
+    parameters_range:
+      n:
+        min: 3
+        max: 8
+      d:
+        min: 50
+        max: 80
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  ram_and_cpu_task_small:
+    func_name: ram_and_cpu_task
+    full_name: "rlq_scheduler.tasks.tasks.ram_and_cpu_task"
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30  # expressed in seconds
+        penalty: -1000
+      execution:
+        max: 8  # expressed in seconds
+        penalty: -1000
+    parameters_range:
+      n:
+        min: 1
+        max: 5
+      d:
+        min: 40
+        max: 60
+    capacity_usage:
+      cost: 1
+      cost_delta_min: -0.25
+      cost_delta_max: 0.25
+  ram_and_cpu_task_medium:
+    func_name: ram_and_cpu_task
+    full_name: "rlq_scheduler.tasks.tasks.ram_and_cpu_task"
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30  # expressed in seconds
+        penalty: -1000
+      execution:
+        max: 15  # expressed in seconds
+        penalty: -1000
+    parameters_range:
+      n:
+        min: 3
+        max: 8
+      d:
+        min: 50
+        max: 80
+    capacity_usage:
+      cost: 2.5
+      cost_delta_min: -0.5
+      cost_delta_max: 0.5
+  disk_task_small:
+    func_name: disk_task
+    full_name: "rlq_scheduler.tasks.tasks.disk_task"
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30  # expressed in seconds
+        penalty: -1000
+      execution:
+        max: 12  # expressed in seconds
+        penalty: -1000
+    parameters_range:
+      n:
+        min: 35
+        max: 50
+    capacity_usage:
+      cost: 5
+      cost_delta_min: -0.85
+      cost_delta_max: 0.85
+  disk_task_medium:
+    func_name: disk_task
+    full_name: "rlq_scheduler.tasks.tasks.disk_task"
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30  # expressed in seconds
+        penalty: -1000
+      execution:
+        max: 25  # expressed in seconds
+        penalty: -1000
+    parameters_range:
+      n:
+        min: 40
+        max: 80
+    capacity_usage:
+      cost: 8
+      cost_delta_min: -1
+      cost_delta_max: 1
+  disk_and_computation_task_small:
+    func_name: disk_and_computation_task
+    full_name: "rlq_scheduler.tasks.tasks.disk_and_computation_task"
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30  # expressed in seconds
+        penalty: -1000
+      execution:
+        max: 8  # expressed in seconds
+        penalty: -1000
+    parameters_range:
+      n:
+        min: 2
+        max: 6
+      d:
+        min: 40
+        max: 60
+    capacity_usage:
+      cost: 2
+      cost_delta_min: -0.4
+      cost_delta_max: 0.4
+  disk_and_computation_task_medium:
+    func_name: disk_and_computation_task
+    full_name: "rlq_scheduler.tasks.tasks.disk_and_computation_task"
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30  # expressed in seconds
+        penalty: -1000
+      execution:
+        max: 13  # expressed in seconds
+        penalty: -1000
+    parameters_range:
+      n:
+        min: 3
+        max: 10
+      d:
+        min: 50
+        max: 80
+    capacity_usage:
+      cost: 3
+      cost_delta_min: -0.6
+      cost_delta_max: 0.6
+
+worker_classes:
+  worker_class_1:
+    cost_config:
+      cost_external: 2
+      cost_internal: 1
+    capacity: 1
+    speed_factor: 0.5
+  worker_class_2:
+    cost_config:
+      cost_external: 3
+      cost_internal: 2
+    capacity: 2
+    speed_factor: 0.75
+  worker_class_3:
+    cost_config:
+      cost_external: 6
+      cost_internal: 3
+    capacity: 3
+    speed_factor: 1
+  worker_class_4:
+    cost_config:
+      cost_external: 8
+      cost_internal: 4
+    capacity: 4
+    speed_factor: 1.5
+  worker_class_5:
+    cost_config:
+      cost_external: 10
+      cost_internal: 5
+    capacity: 5
+    speed_factor: 2
+#  worker_class_6:
+#    cost_config:
+#      cost_external: 10.24
+#      cost_internal: 5.12
+#    capacity: 8
+#    speed_factor: 2.5

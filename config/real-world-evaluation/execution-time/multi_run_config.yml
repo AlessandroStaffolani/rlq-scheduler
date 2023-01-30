@@ -1,0 +1,176 @@
+---
+
+global:
+  global_seed: 42
+  seeds:
+    n_runs: 1  # repeat each execution n_runs times using a different random seed
+    auto: false  # if true auto generate n_runs seeds, otherwise use the provided ones
+    task_generator: 2
+    agents:
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 16
+      - 17
+      - 18
+      - 19
+      - 20
+      - 21
+      - 22
+
+task_generator:
+  bootstrapping:
+    skip: 0
+    distribution: poisson_fixed
+    tasks_to_generate: 3000
+    rate_per_interval: 60
+    rate_per_interval_range:
+      - 5
+      - 16  # not inclusive
+  tasks_to_generate:
+    - skip: 0
+      distribution: poisson_fixed  # possible value ["none", "poisson_fixed", "poisson_variable"]
+      tasks_to_generate: 13730  # how many tasks generate in total
+      rate_per_interval: 60  # tasks generated every interval, if distribution is "none" this value is ignored
+      rate_per_interval_range:  # discrete uniform distribution range used to compute the rate_per_interval for every interval in the "poisson_variable" distribution case
+        - 5
+        - 16  # not inclusive
+
+features_enabled:
+  - waiting_time: true
+    execution_time: event  # possible values ["event", "result"]
+    expandable_pool: false
+    trajectory_saving: false
+    evaluation: false
+    google_traces_mode: true
+    google_traces_time_multiplier: 20  # in the dataset 1 second is equivalent to 1 days, use the multiplier to rescale the value
+#  - waiting_time: true
+#    expandable_pool: false
+#    execution_time: result
+
+save_properties:
+  run_name_prefix: execution-time
+  checkpoint_frequency: 5000
+  saving_mode: final-model
+
+penalties:
+  out_of_budget: -100
+  task_failed: -1000
+
+functions:
+  execution_cost:
+    type: value-based  # available types ["value-based", "market-based"]
+    train_data: data/cloud-providers-cost.csv
+  reward_function:
+    type: execution-time  # available types ["waiting-time, "execution-time", "execution-cost", "makespan", "total-cost"]
+    extra_parameters: {}
+
+state_features:
+  - task_class_type:
+      type: array
+      is_dummy: true
+      values: task_classes
+      is_worker_related: false
+      is_global: true
+    pool_load:
+      type: array
+      is_dummy: false
+      values: worker_classes
+      is_worker_related: false
+      is_global: true
+
+state:
+  time_window: 30
+
+context_features:
+  task_class_type:
+    type: array
+    is_dummy: true
+    values: task_classes
+    is_worker_related: false
+    is_global: true
+  pool_load:
+    type: array
+    is_dummy: false
+    values: worker_classes
+    is_worker_related: false
+    is_global: true
+  action:
+    type: array
+    is_dummy: true
+    values: worker_classes
+    is_worker_related: false
+    is_global: false
+
+global_agent_config:
+  action_space:  # the action space will be recomputed based on the worker classes available
+    - worker_class_1
+    - worker_class_2
+    - worker_class_3
+    - worker_class_4
+    - worker_class_5
+  load_model_config:
+    load: false
+    path: NULL
+  reward_multiplier:
+    value: 1
+    limit: NULL
+  save_model_config:
+    enabled: true
+    folder: models
+  train: true
+  random_seed: 4
+
+agents:
+  - type: lin-ucb
+    parameters:  # list of the parameters for which the training is actually performed
+      - type: agent
+        name: delta
+        mode: array
+        values:
+          - 0.1
+          - 1
+          - 1.5
+          - 2
+
+  - type: double-dqn
+    batch_size: 64
+    epsilon:
+      parameters:
+        end: 0.01
+        start: 0.65
+        total: 6000
+      type: linear-decay
+    experience_replay_capacity: 4000
+    gamma: 0.99
+    network_config:
+      parameters:
+        hidden_layers: 3
+      type: fully-connected
+    optimizer: adam
+    target_net_update_frequency: 400
+    parameters:
+      - type: agent
+        name: learning_rate
+        mode: array
+        values:
+          - 0.1
+          - 0.01
+          - 0.001
+      - type: agent_parameter_param
+        name: hidden_layers
+        param: network_config
+        mode: array
+        values:
+          - 2
+          - 3

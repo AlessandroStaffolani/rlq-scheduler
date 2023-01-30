@@ -1,0 +1,14 @@
+celery==5.0.5
+celery[redis]
+psutil
+redis
+numpy==1.18.5
+pandas
+scikit-learn
+PyYAML
+future
+python-dotenv
+minio
+tensorboard
+tensorflow
+pymongo

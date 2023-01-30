@@ -1,0 +1,155 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: WORKER-CLASS-NAME-svc
+  labels:
+    app.kubernetes.io/name: WORKER-CLASS-NAME-svc
+    app.kubernetes.io/instance: service
+    app.kubernetes.io/component: workers
+    app.kubernetes.io/part-of: backbone
+spec:
+  ports:
+  - port: 80
+    name: base
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: WORKER-CLASS-NAME
+    app.kubernetes.io/component: workers
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/name: WORKER-CLASS-NAME
+    app.kubernetes.io/instance: deployment
+    app.kubernetes.io/component: workers
+    app.kubernetes.io/part-of: backbone
+    class: WORKER_CLASS_CLASS_NAME
+  name: WORKER-CLASS-NAME
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: WORKER-CLASS-NAME
+  serviceName: WORKER-CLASS-NAME-svc
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: WORKER-CLASS-NAME
+        app.kubernetes.io/instance: deployment
+        app.kubernetes.io/component: workers
+        app.kubernetes.io/part-of: backbone
+        class: WORKER_CLASS_CLASS_NAME
+    spec:
+      initContainers:
+        - name: init-redis-queue
+          image: cloud.canister.io:5000/ale8193/busybox
+          command: ['sh', '-c', "until nslookup redis.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for redis service; sleep 2; done"]
+        - name: init-redis-shared-memory
+          image: cloud.canister.io:5000/ale8193/busybox
+          command: [ 'sh', '-c', "until nslookup redis-shared-memory.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for redis service; sleep 2; done" ]
+      containers:
+#        - image: cloud.canister.io:5000/ale8193/filebeat:7.9.3
+#          name: filebeat
+#          env:
+#            - name: ELK_HOST
+#              value: astaffolani.imolab.it
+#            - name: ELASTICSEARCH_HOSTS
+#              value: astaffolani.imolab.it:9200
+#            - name: ENV_HOST
+#              valueFrom:
+#                fieldRef:
+#                  fieldPath: metadata.namespace
+#          envFrom:
+#            - secretRef:
+#                name: elasticsearch-secret
+#          volumeMounts:
+#            - mountPath: /var/log/celery
+#              name: logs
+#            - name: filebeat-config
+#              mountPath: /usr/share/filebeat/filebeat.yml
+#              subPath: filebeat.yml
+#              readOnly: true
+#          securityContext:
+#            runAsUser: 0
+#          resources:
+#            limits:
+#              memory: 200Mi
+#            requests:
+#              cpu: 100m
+#              memory: 100Mi
+        - image: cloud.canister.io:5000/ale8193/worker
+          name: worker
+          imagePullPolicy: Always
+          env:
+            - name: CELERY_APP
+              value: rlq_scheduler
+            - name: BROKER_SERVICE_SERVICE_HOST
+              value: redis.default
+            - name: WORKER_NAME
+              value: WORKER_CLASS_CLASS_NAME
+            - name: WORKER_QUEUES
+              value: WORKER_CLASS_CLASS_NAME
+          envFrom:
+            - secretRef:
+                name: minio-secret
+            - configMapRef:
+                name: minio-config
+            - configMapRef:
+                name: mongo-config
+            - secretRef:
+                name: mongo-secret
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+#            - mountPath: /opt/rlq/worker/data
+#              name: data
+            - mountPath: /var/log/celery
+              name: logs
+            - name: global-config
+              mountPath: /opt/rlq/worker/config/global.yml
+              subPath: global.yml
+              readOnly: true
+      imagePullSecrets:
+        - name: docker-registry
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: global-config
+          configMap:
+            name: global-config
+#        - name: filebeat-config
+#          configMap:
+#            name: filebeat-config
+#  volumeClaimTemplates:
+#    - metadata:
+#        name: data
+#        labels:
+#          app.kubernetes.io/name: worker-data
+#          app.kubernetes.io/instance: pvc
+#          app.kubernetes.io/component: workers
+#          app.kubernetes.io/part-of: backbone
+#      spec:
+#        accessModes: [ "ReadWriteOnce" ]
+#        resources:
+#          requests:
+#            storage: 1Gi
+#        volumeMounts:
+#          - mountPath: /var/log/celery
+#            name: logs
+#            readOnly: false
+#      volumes:
+#        - name: logs
+#          persistentVolumeClaim:
+#            claimName: worker-class-1-data
+#        volumeMounts:
+#          - mountPath: /var/log/celery
+#            name: logs
+#            readOnly: false
+#      volumes:
+#        - name: logs
+#          persistentVolumeClaim:
+#            claimName: worker-class-1-data

@@ -1,0 +1,1145 @@
+---
+
+api:
+  endpoints:
+    agent:
+      host: agent
+      port: 9090
+      protocol: http
+    trajectory_collector:
+      host: trajectory-collector
+      port: 9091
+      protocol: http
+    task_generator:
+      host: task-generator
+      port: 9093
+      protocol: http
+    system_manager:
+      host: system-manager
+      port: 9092
+      kube_port: 30092
+      protocol: http
+
+state_builder:
+  mode: local  # available: ["local", "shared"]
+  state_key: state_features  # used only if mode is shared
+  resource_usage_key: resources_usage
+  task_frequency_key: task_frequency
+  worker_state_key: worker_state
+  pool_load_key: pool_load
+  pool_utilization_key: pool_utilization
+
+backend:
+  adapter: redis
+  config:
+    connection:
+      host: redis-shared-memory
+      port: 6380
+      db: 0
+    trajectory_prefix: trajectory
+    previous_trajectory_key: previous_trajectory
+    task_waiting_time_prefix: task_waiting_time
+    validation_reward_prefix: validation
+    assignment_entry_prefix: assignment_entry
+
+object_handler:
+  type: minio  # available are [base, minio]
+  base_folder: ""
+  default_bucket: gtraces1
+
+tensorboard:
+  enabled: false
+  transport: s3
+  log_dir_base: sb2
+
+redis:
+  statistics_prefix: stats
+  system_info_topic: service_broker_info
+  config:
+    host: redis-shared-memory
+    port: 6380
+    db: 0
+
+task_broker:
+  task_name: task_broker
+  worker_name: task_broker
+  queue_name: main
+
+datasets:
+  google_traces:
+    eval_dataset_path: data/google-traces/eval_dataset.json
+    synthetic_dataset_path: data/google-traces/synthetic_dataset.json
+    task_function_name: google_trace_task
+
+saver:
+  save_interval: 100
+
+task_classes:
+  task_class_1:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.008065619052737047
+      n:
+        min: 0.0051595948148148146
+        max: 0.04733700325231482
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_2:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.003275450309990716
+      n:
+        min: 0.0015904372685185185
+        max: 0.04335003605324074
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_3:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.003401526480356224
+      n:
+        min: 0.0017892272685185186
+        max: 0.04368273854166667
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_4:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.0387603203464369
+      n:
+        min: 0.006640329143518519
+        max: 0.16796356876157406
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_5:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.038759183012129404
+      n:
+        min: 0.0066404239236111115
+        max: 0.16796375127314814
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_6:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.01084967903182771
+      n:
+        min: 0.0059311190625
+        max: 0.03974746403935185
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_7:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.01687658526653321
+      n:
+        min: 0.012907586863425927
+        max: 0.08202812725694444
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_8:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.010860843900421479
+      n:
+        min: 0.0063283878125
+        max: 0.08224474438657407
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_9:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.015274910439500113
+      n:
+        min: 0.012812667094907408
+        max: 0.03786591240740741
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_10:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.010255248270855102
+      n:
+        min: 0.00518301505787037
+        max: 0.08259737564814815
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_11:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.017226036158810326
+      n:
+        min: 0.0023466438194444444
+        max: 0.17399804371527777
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_12:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.015219809240248702
+      n:
+        min: 0.0008949569212962963
+        max: 0.03851729414351852
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_13:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.015137645582694764
+      n:
+        min: 0.008359031701388889
+        max: 0.03002108527777778
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_14:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.0016122505674626964
+      n:
+        min: 0.0006349598958333333
+        max: 0.03530360505787037
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_15:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.24988781675981933
+      n:
+        min: 0.04071276424768518
+        max: 0.8753076208217593
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_16:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.24988257578050332
+      n:
+        min: 0.04071145892361111
+        max: 0.8757455148263888
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_17:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.24988272500532036
+      n:
+        min: 0.04071128332175926
+        max: 0.8757455172106482
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_18:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.24988783791171967
+      n:
+        min: 0.040712762743055554
+        max: 0.8753093000231481
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_19:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.0374363041600149
+      n:
+        min: 0.0046364928240740745
+        max: 0.12550932991898148
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_20:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.06875847994833603
+      n:
+        min: 0.002525953113425926
+        max: 0.9997285092013889
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_21:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.07342589118362991
+      n:
+        min: 0.005577642488425926
+        max: 0.9995469695601852
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_22:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.07345288839355468
+      n:
+        min: 0.005644659525462963
+        max: 0.999474938275463
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_23:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.07344439314507378
+      n:
+        min: 0.005584020219907408
+        max: 0.9994538090972223
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_24:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.06596211804306291
+      n:
+        min: 0.007681442175925926
+        max: 2.8203678633564815
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_25:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.30777398283240737
+      n:
+        min: 0.005611345
+        max: 7.0007823051967595
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_26:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.02728945212248818
+      n:
+        min: 0.002492356770833333
+        max: 0.16438416194444444
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_27:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.027288965202915686
+      n:
+        min: 0.002493512673611111
+        max: 0.1643819022685185
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_28:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.028248103163667923
+      n:
+        min: 0.002508616400462963
+        max: 0.1645430125925926
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_29:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.009540260623654179
+      n:
+        min: 0.005939093877314815
+        max: 0.013324259409722223
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_30:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.019164615119598768
+      n:
+        min: 0.015918231041666668
+        max: 0.03727025006944444
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_31:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.01783486908950617
+      n:
+        min: 0.015009384733796297
+        max: 0.027932754976851853
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_32:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.03076966433433434
+      n:
+        min: 0.007884821064814815
+        max: 0.040969290567129626
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_33:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.03079409642955455
+      n:
+        min: 0.007949404756944445
+        max: 0.04090751435185185
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_34:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.030835804801051046
+      n:
+        min: 0.007982338784722222
+        max: 0.040810817939814815
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_35:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.011640452331211422
+      n:
+        min: 0.00649382375
+        max: 0.035360697141203705
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_36:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.8548947955841504
+      n:
+        min: 0.00026366903935185187
+        max: 19.75004307408565
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_37:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.9560368704267941
+      n:
+        min: 0.021831464409722223
+        max: 2.003768963402778
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_38:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.9767886311883959
+      n:
+        min: 0.28066627625
+        max: 1.00105302625
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_39:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.9767889484964903
+      n:
+        min: 0.2806662795486111
+        max: 1.0010530711226853
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_40:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 1.00076544497608
+      n:
+        min: 0.01831855877314815
+        max: 2.0032663221296296
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_41:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 1.000964644154321
+      n:
+        min: 0.017374421203703704
+        max: 2.0013744810185186
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_42:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 1.387722851295498
+      n:
+        min: 0.9282866521412036
+        max: 9.314828504513889
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_43:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.0002808715429438059
+      n:
+        min: 0.00019942547453703703
+        max: 0.0004239083564814815
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_44:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.01611888588162516
+      n:
+        min: 0.010974987118055555
+        max: 0.02672955736111111
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_45:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.014841666807151975
+      n:
+        min: 0.014227823796296297
+        max: 0.017758501435185186
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_46:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 1.104594412981564
+      n:
+        min: 0.9279169705555556
+        max: 3.9993866674421295
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_47:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.5606261679460152
+      n:
+        min: 0.003987041979166666
+        max: 7.001099760115741
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_48:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.04989604245811288
+      n:
+        min: 0.009008236041666666
+        max: 0.2389402532638889
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_49:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.04959365898699293
+      n:
+        min: 0.007488541388888889
+        max: 0.23914600706018518
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  task_class_50:
+    func_name: google_trace_task
+    full_name: service_broker.tasks.tasks.google_trace_task
+    waiting_cost: 3.5
+    constraints:
+      wait:
+        max: 30
+        penalty: -1000
+      execution:
+        max: 15
+        penalty: -1000
+    parameters_range:
+      time_of_execution: 0.03769708051981263
+      n:
+        min: 0.004007044537037037
+        max: 0.9991652112847222
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+
+worker_classes:
+  worker_class_1:
+    cost_config:
+      cost_external: 1
+      cost_internal: 2
+    replicas: 20
+    resources:
+      memory: 128Mi
+      cpu: 200m
+      disk: 258Mi
+    capacity: 1
+    speed_factor: 0.5
+  worker_class_2:
+    cost_config:
+      cost_external: 2
+      cost_internal: 4
+    replicas: 14
+    resources:
+      memory: 128Mi
+      cpu: 200m
+      disk: 258Mi
+    capacity: 2
+    speed_factor: 0.75
+  worker_class_3:
+    cost_config:
+      cost_external: 3
+      cost_internal: 6
+    replicas: 8
+    resources:
+      memory: 128Mi
+      cpu: 200m
+      disk: 258Mi
+    capacity: 3
+    speed_factor: 1
+  worker_class_4:
+    cost_config:
+      cost_external: 4
+      cost_internal: 5
+    replicas: 5
+    resources:
+      memory: 128Mi
+      cpu: 200m
+      disk: 258Mi
+    capacity: 4
+    speed_factor: 1.5
+  worker_class_5:
+    cost_config:
+      cost_external: 5
+      cost_internal: 10
+    replicas: 3
+    resources:
+      memory: 128Mi
+      cpu: 200m
+      disk: 258Mi
+    capacity: 5
+    speed_factor: 2
+
+logger:
+  name: service_broker
+  level: 20  # 10=DEBUG, 20=INFO, 30=WARN, 40=ERROR
+  handlers:
+    - type: console
+      parameters: NULL
+#    - type: file
+#      parameters:
+#        log_folder: service_broker
+#        log_basepath: logs

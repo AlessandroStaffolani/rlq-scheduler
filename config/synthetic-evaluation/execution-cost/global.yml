@@ -1,0 +1,271 @@
+---
+
+api:
+  endpoints:
+    agent:
+      host: agent
+      port: 9090
+      protocol: http
+    trajectory_collector:
+      host: trajectory-collector
+      port: 9091
+      protocol: http
+    task_generator:
+      host: task-generator
+      port: 9093
+      protocol: http
+    system_manager:
+      host: system-manager
+      port: 9092
+      kube_port: 30092
+      protocol: http
+
+state_builder:
+  mode: local  # available: ["local", "shared"]
+  state_key: state_features  # used only if mode is shared
+  resource_usage_key: resources_usage
+  task_frequency_key: task_frequency
+  worker_state_key: worker_state
+  pool_load_key: pool_load
+  pool_utilization_key: pool_utilization
+
+backend:
+  adapter: redis
+  config:
+    connection:
+      host: redis-shared-memory
+      port: 6380
+      db: 0
+    trajectory_prefix: trajectory
+    previous_trajectory_key: previous_trajectory
+    task_waiting_time_prefix: task_waiting_time
+    validation_reward_prefix: validation
+    assignment_entry_prefix: assignment_entry
+
+object_handler:
+  type: minio  # available are [base, minio]
+  base_folder: ""
+  default_bucket: synthetic
+
+tensorboard:
+  enabled: false
+  transport: s3
+  log_dir_base: synthetic
+
+redis:
+  statistics_prefix: stats
+  system_info_topic: service_broker_info
+  config:
+    host: redis-shared-memory
+    port: 6380
+    db: 0
+
+task_broker:
+  task_name: task_broker
+  worker_name: task_broker
+  queue_name: main
+
+datasets:
+  google_traces:
+    eval_dataset_path: data/google-traces/eval_dataset.json
+    synthetic_dataset_path: data/google-traces/synthetic_dataset.json
+    task_function_name: google_trace_task
+
+saver:
+  save_interval: 100
+
+task_classes:
+  cpu_task_small:
+    func_name: cpu_task
+    full_name: "rlq_scheduler.tasks.tasks.cpu_task"
+    waiting_cost: 3.5
+    parameters_range:
+      n:
+        min: 1
+        max: 5
+      d:
+        min: 40
+        max: 60
+    capacity_usage:
+      cost: 1.5
+      cost_delta_min: -0.3
+      cost_delta_max: 0.3
+  cpu_task_medium:
+    func_name: cpu_task
+    full_name: "rlq_scheduler.tasks.tasks.cpu_task"
+    waiting_cost: 3.5
+    parameters_range:
+      n:
+        min: 3
+        max: 8
+      d:
+        min: 50
+        max: 80
+    capacity_usage:
+      cost: 3.5
+      cost_delta_min: -0.75
+      cost_delta_max: 0.75
+  ram_and_cpu_task_small:
+    func_name: ram_and_cpu_task
+    full_name: "rlq_scheduler.tasks.tasks.ram_and_cpu_task"
+    waiting_cost: 3.5
+    parameters_range:
+      n:
+        min: 1
+        max: 5
+      d:
+        min: 40
+        max: 60
+    capacity_usage:
+      cost: 1
+      cost_delta_min: -0.25
+      cost_delta_max: 0.25
+  ram_and_cpu_task_medium:
+    func_name: ram_and_cpu_task
+    full_name: "rlq_scheduler.tasks.tasks.ram_and_cpu_task"
+    waiting_cost: 3.5
+    parameters_range:
+      n:
+        min: 3
+        max: 8
+      d:
+        min: 50
+        max: 80
+    capacity_usage:
+      cost: 2.5
+      cost_delta_min: -0.5
+      cost_delta_max: 0.5
+  disk_task_small:
+    func_name: disk_task
+    full_name: "rlq_scheduler.tasks.tasks.disk_task"
+    waiting_cost: 3.5
+    parameters_range:
+      n:
+        min: 35
+        max: 50
+    capacity_usage:
+      cost: 5
+      cost_delta_min: -0.85
+      cost_delta_max: 0.85
+  disk_task_medium:
+    func_name: disk_task
+    full_name: "rlq_scheduler.tasks.tasks.disk_task"
+    waiting_cost: 3.5
+    parameters_range:
+      n:
+        min: 40
+        max: 80
+    capacity_usage:
+      cost: 8
+      cost_delta_min: -1
+      cost_delta_max: 1
+  disk_and_computation_task_small:
+    func_name: disk_and_computation_task
+    full_name: "rlq_scheduler.tasks.tasks.disk_and_computation_task"
+    waiting_cost: 3.5
+    parameters_range:
+      n:
+        min: 2
+        max: 6
+      d:
+        min: 40
+        max: 60
+    capacity_usage:
+      cost: 2
+      cost_delta_min: -0.4
+      cost_delta_max: 0.4
+  disk_and_computation_task_medium:
+    func_name: disk_and_computation_task
+    full_name: "rlq_scheduler.tasks.tasks.disk_and_computation_task"
+    waiting_cost: 3.5
+    parameters_range:
+      n:
+        min: 3
+        max: 10
+      d:
+        min: 50
+        max: 80
+    capacity_usage:
+      cost: 3
+      cost_delta_min: -0.6
+      cost_delta_max: 0.6
+
+
+worker_classes:
+  worker_class_1:
+    cost_config:
+      cost_external: 2.76
+      cost_internal: 0.85
+    replicas: 1
+    resources:
+      memory: 100Mi
+      cpu: 200m
+      disk: 128Mi
+    capacity: 1
+    speed_factor: 0.5
+  worker_class_2:
+    cost_config:
+      cost_external: 3.86
+      cost_internal: 1.93
+    replicas: 1
+    resources:
+      memory: 128Mi
+      cpu: 300m
+      disk: 258Mi
+    capacity: 2
+    speed_factor: 0.75
+  worker_class_3:
+    cost_config:
+      cost_external: 6.44
+      cost_internal: 3.22
+    replicas: 1
+    resources:
+      memory: 180Mi
+      cpu: 500m
+      disk: 512Mi
+    capacity: 3.5
+    speed_factor: 1
+  worker_class_4:
+    cost_config:
+      cost_external: 5.88
+      cost_internal: 2.94
+    replicas: 1
+    resources:
+      memory: 128Mi
+      cpu: 500m
+      disk: 128Mi
+    capacity: 3
+    speed_factor: 1.5
+  worker_class_5:
+    cost_config:
+      cost_external: 8.4
+      cost_internal: 4.02
+    replicas: 1
+    resources:
+      memory: 260Mi
+      cpu: 800m
+      disk: 256Mi
+    capacity: 6
+    speed_factor: 2
+  worker_class_6:
+    cost_config:
+      cost_external: 10.24
+      cost_internal: 5.12
+    replicas: 1
+    resources:
+      memory: 512Mi
+      cpu: 1000m
+      disk: 800Mi
+    capacity: 8
+    speed_factor: 2.5
+
+logger:
+  name: service_broker
+  level: 10  # 10=DEBUG, 20=INFO, 30=WARN, 40=ERROR
+  handlers:
+    - type: console
+      parameters: NULL
+#    - type: file
+#      parameters:
+#        log_folder: service_broker
+#        log_basepath: logs

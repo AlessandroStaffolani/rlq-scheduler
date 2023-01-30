@@ -1,0 +1,112 @@
+---
+
+kube:
+  config_file: ~/.kube/config
+  config_mode: out  # possible values "in" or "out"
+  namespace: rlq-waiting-time
+  common_labels:
+    - app.kubernetes.io/product: rlq
+  image_version: latest
+
+custom_images:
+  - cloud.canister.io:5000/rlq/agent
+  - cloud.canister.io:5000/rlq/task_broker
+  - cloud.canister.io:5000/rlq/task_generator
+  - cloud.canister.io:5000/rlq/worker
+  - cloud.canister.io:5000/rlq/trajectory_collector
+  - cloud.canister.io:5000/rlq/system_manager
+
+deployer_manager:
+  pool_size: 1
+
+secrets:
+  docker_registry: kubernetes/rlq/docker-secret.yaml
+  minio: kubernetes/rlq/minio-secret.yaml
+  mongo: kubernetes/rlq/mongo-secret.yaml
+
+config_maps_to_load:
+  - kubernetes/rlq/minio-config.yaml
+  - kubernetes/evaluations/waiting-time/mongo-config.yaml
+
+config_maps_to_create:
+  - file: config/real-world-evaluation/waiting-time/global.yml
+    cmap_args:
+      name: global-config
+      data_key: global.yml
+      instance: config
+      component: global
+      part_of: config
+  - file: config/kube/agent.yml
+    cmap_args:
+      name: agent-config
+      data_key: agent.yml
+      instance: config
+      component: agent
+      part_of: config
+  - file: config/kube/task_generator.yml
+    cmap_args:
+      name: task-generator-config
+      data_key: task_generator.yml
+      instance: config
+      component: task-generator
+      part_of: config
+  - file: config/kube/trajectory_collector.yml
+    cmap_args:
+      name: trajectory-collector-config
+      data_key: trajectory_collector.yml
+      instance: config
+      component: trajectory-collector
+      part_of: config
+  - file: config/kube/system_manager.yml
+    cmap_args:
+      name: system-manager-config
+      data_key: system_manager.yml
+      instance: config
+      component: system-manager
+      part_of: config
+  - file: config/real-world-evaluation/waiting-time/multi_run_config.yml
+    cmap_args:
+      name: multi-run-config
+      data_key: multi_run_config.yml
+      instance: config
+      component: system-manager
+      part_of: config
+  - file: config/real-world-evaluation/waiting-time/run_config.yml
+    cmap_args:
+      name: run-config
+      data_key: run_config.yml
+      instance: config
+      component: system-manager
+      part_of: config
+
+deployments:
+  redis-queue:
+    file: kubernetes/evaluations/waiting-time/redis-queue.yaml
+  redis-shared-memory:
+    file: kubernetes/evaluations/waiting-time/redis-shared-memory.yaml
+  system_manager:
+    file: kubernetes/evaluations/waiting-time/system_manager.yaml
+  task_broker:
+    file: kubernetes/rlq/task_broker.yaml
+  worker_class_template:
+    file: kubernetes/rlq/worker_class_template.yaml
+  flower:
+    file: kubernetes/evaluations/waiting-time/flower.yaml
+  trajectory_collector:
+    file: kubernetes/rlq/trajectory_collector.yaml
+  agent:
+    file: kubernetes/rlq/agent.yaml
+  task_generator:
+    file: kubernetes/rlq/task_generator.yaml
+
+
+logger:
+  name: deployer_manager
+  level: 10  # 10=DEBUG, 20=INFO, 30=WARN, 40=ERROR
+  handlers:
+    - type: console
+      parameters: NULL
+    - type: file
+      parameters:
+        log_folder: deployer_manager
+        log_basepath: logs

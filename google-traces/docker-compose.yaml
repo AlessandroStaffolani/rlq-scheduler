@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+
+  mongo:
+    image: mongo:4.4
+    restart: unless-stopped
+    container_name: mongo
+    command: --quiet
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pass1234
+      MONGO_INITDB_DATABASE: google_traces
+    volumes:
+      - ./mongo_data:/data/db
+
+  mongo-express:
+    image: mongo-express
+    restart: unless-stopped
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: pass1234
+      ME_CONFIG_MONGODB_URL: "mongodb://root:pass1234@mongo:27017/"
+
+volumes:
+  mongo_data:

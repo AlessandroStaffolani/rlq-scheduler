@@ -1,0 +1,11 @@
+---
+namespace: default
+commonLabels:
+  app.kubernetes.io/product: rlq
+resources:
+  - redis/redis-leader.yaml
+  - rlq/docker-secret.yaml
+  - rlq/global-config.yaml
+  - rlq/task_broker.yaml
+  - rlq/worker_class_1.yaml
+  - rlq/worker_class_2.yaml

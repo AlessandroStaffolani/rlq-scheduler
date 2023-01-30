@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+
+  notebooks:
+    build:
+      context: ../..
+      dockerfile: docker/notebook/Dockerfile
+    image: service-broker/notebook
+    container_name: notebook
+    restart: unless-stopped
+    networks:
+      - notebook
+    ports:
+      - 8888:8888
+#    environment:
+#      ENTERPRISE_GATEWAY_HOST_IP: 192.168.211.52
+#      ENTERPRISE_GATEWAY_PORT: 30855
+    env_file:
+      - ../../.env
+    volumes:
+      - ../../service_broker:/jupyter/service_broker
+      - ../../notebooks:/jupyter/notebooks
+      - ../../results:/jupyter/results
+      - ../../config:/jupyter/config
+      - ../../jupyter:/jupyter
+
+networks:
+  notebook:

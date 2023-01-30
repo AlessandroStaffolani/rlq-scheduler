@@ -1,0 +1,5 @@
+flask
+flask-restful
+gunicorn
+gevent
+requests

@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongo-config
+  labels:
+    app.kubernetes.io/name: mongo-config
+    app.kubernetes.io/instance: config
+    app.kubernetes.io/component: db
+    app.kubernetes.io/part-of: storage
+data:
+  MONGO_HOST: 10.25.1.120
+  MONGO_PORT: '27017'
+  MONGO_REPLICA_SET: ""
+  MONGO_DB: sb_waiting_time

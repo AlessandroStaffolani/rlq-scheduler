@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minio-config
+  labels:
+    app.kubernetes.io/name: minio-config
+    app.kubernetes.io/instance: config
+    app.kubernetes.io/component: object-handler
+    app.kubernetes.io/part-of: storage
+data:
+  MINIO_ENDPOINT: 10.25.1.120:9000
+  MINIO_SECURE:
+  AWS_REGION:
+  AWS_LOG_LEVEL: "3"
+  S3_ENDPOINT: 10.25.1.120:9000
+  S3_USE_HTTPS: "0"
+  S3_VERIFY_SSL: "0"

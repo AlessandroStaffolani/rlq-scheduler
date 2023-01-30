@@ -1,0 +1,12 @@
+FROM rlq/base
+
+WORKDIR /usr/src/jupyter
+
+COPY requirements/notebook.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY config ./config
+COPY notebooks ./notebooks
+COPY rlq_scheduler ./rlq_scheduler
+
+CMD ["jupyter", "notebook", "--no-browser", "--ip=0.0.0.0", "--notebook-dir=/usr/src/jupyter", "--allow-root"]

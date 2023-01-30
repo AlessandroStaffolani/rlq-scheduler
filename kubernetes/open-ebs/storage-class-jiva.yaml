@@ -1,0 +1,36 @@
+apiVersion: openebs.io/v1alpha1
+kind: JivaVolumePolicy
+metadata:
+  name: one-replica-jivavolumepolicy
+  namespace: openebs
+spec:
+  replicaSC: openebs-hostpath
+  target:
+    # This sets the number of replicas for high-availability
+    # replication factor <= no. of (CSI) nodes
+    replicationFactor: 1
+    # disableMonitor: false
+    # auxResources:
+    # tolerations:
+    # resources:
+    # affinity:
+    # nodeSelector:
+    # priorityClassName:
+  # replica:
+    # tolerations:
+    # resources:
+    # affinity:
+    # nodeSelector:
+    # priorityClassName:
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: openebs-jiva-csi-sc-one-replica
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: jiva.csi.openebs.io
+allowVolumeExpansion: true
+parameters:
+  cas-type: "jiva"
+  policy: "one-replica-jivavolumepolicy"

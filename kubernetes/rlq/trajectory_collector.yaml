@@ -1,0 +1,146 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: trajectory-collector
+    app.kubernetes.io/instance: service
+    app.kubernetes.io/component: trajectory-collector
+    app.kubernetes.io/part-of: environment
+  name: trajectory-collector
+spec:
+  ports:
+  - name: trajectory-collector
+    protocol: TCP
+    port: 9091
+  selector:
+    app.kubernetes.io/part-of: backbone
+    app.kubernetes.io/name: trajectory-collector
+#---
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: trajectory-collector-data
+#  labels:
+#    app.kubernetes.io/name: trajectory-collector-data
+#    app.kubernetes.io/instance: pvc
+#    app.kubernetes.io/component: trajectory-collector
+#    app.kubernetes.io/part-of: backbone
+#spec:
+#  accessModes:
+#    - ReadWriteOnce
+#  resources:
+#    requests:
+#      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: trajectory-collector
+    app.kubernetes.io/instance: deployment
+    app.kubernetes.io/component: trajectory-collector
+    app.kubernetes.io/part-of: backbone
+  name: trajectory-collector
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: trajectory-collector
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: trajectory-collector
+        app.kubernetes.io/instance: deployment
+        app.kubernetes.io/component: trajectory-collector
+        app.kubernetes.io/part-of: backbone
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      initContainers:
+        - name: init-redis-queue
+          image: cloud.canister.io:5000/ale8193/busybox
+          command: ['sh', '-c', "until nslookup redis.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for redis service; sleep 2; done"]
+        - name: init-redis-shared-memory
+          image: cloud.canister.io:5000/ale8193/busybox
+          command: [ 'sh', '-c', "until nslookup redis-shared-memory.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for redis service; sleep 2; done" ]
+      containers:
+#        - image: cloud.canister.io:5000/ale8193/filebeat:7.9.3
+#          name: filebeat
+#          env:
+#            - name: ELK_HOST
+#              value: astaffolani.imolab.it
+#            - name: ELASTICSEARCH_HOSTS
+#              value: astaffolani.imolab.it:9200
+#            - name: ENV_HOST
+#              valueFrom:
+#                fieldRef:
+#                  fieldPath: metadata.namespace
+#          envFrom:
+#            - secretRef:
+#                name: elasticsearch-secret
+#          volumeMounts:
+#            - mountPath: /var/log/trajectory_collector
+#              name: logs
+#            - name: filebeat-config
+#              mountPath: /usr/share/filebeat/filebeat.yml
+#              subPath: filebeat.yml
+#              readOnly: true
+#          securityContext:
+#            runAsUser: 0
+#          resources:
+#            limits:
+#              memory: 200Mi
+#            requests:
+#              cpu: 100m
+#              memory: 100Mi
+        - image: cloud.canister.io:5000/ale8193/trajectory_collector
+          name: trajectory-collector
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9091
+          env:
+            - name: TC_SERVER_MODULE
+              value: rlq_scheduler.trajectory_collector.server
+            - name: TC_SERVER_CONFIG_FILENAME
+              value: /opt/rlq/trajectory_collector/config/trajectory_collector.yml
+            - name: GLOBAL_CONFIG_FILENAME
+              value: /opt/rlq/trajectory_collector/config/global.yml
+            - name: BROKER_SERVICE_SERVICE_HOST
+              value: redis.default
+          envFrom:
+            - secretRef:
+                name: minio-secret
+            - configMapRef:
+                name: minio-config
+            - configMapRef:
+                name: mongo-config
+            - secretRef:
+                name: mongo-secret
+          volumeMounts:
+            - mountPath: /opt/rlq/trajectory_collector/logs/trajectory_collector
+              name: logs
+              readOnly: false
+            - name: global-config
+              mountPath: /opt/rlq/trajectory_collector/config/global.yml
+              subPath: global.yml
+              readOnly: true
+            - name: trajectory-collector-config
+              mountPath: /opt/rlq/trajectory_collector/config/trajectory_collector.yml
+              subPath: trajectory_collector.yml
+              readOnly: true
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: global-config
+          configMap:
+            name: global-config
+        - name: trajectory-collector-config
+          configMap:
+            name: trajectory-collector-config
+#        - name: filebeat-config
+#          configMap:
+#            name: filebeat-config
+      imagePullSecrets:
+        - name: docker-registry

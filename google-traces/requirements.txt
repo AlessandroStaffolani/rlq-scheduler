@@ -1,0 +1,10 @@
+python-dotenv
+python-dateutil
+pymongo
+PyYAML
+matplotlib
+seaborn
+numpy
+pandas
+tqdm
+fitter

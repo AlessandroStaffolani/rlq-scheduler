@@ -1,0 +1,6 @@
+flask
+flask-restful
+requests
+gunicorn
+gevent
+flask_cors
