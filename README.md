@@ -25,6 +25,7 @@ If you plan to use this code please cite us:
 
 ### Requirements
 
+- Python 3. We utilized python 3.8
 - Kubernates cluster: used to deploy the system
  - A storage class provider. An Open-EBS configuration is provided in `kubernetes/open-ebs`.
  - Local access to the cluster via `kubectl` cli interface
