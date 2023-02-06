@@ -99,7 +99,7 @@ class DeployerManager:
             self._mongo_secret_step,
             self._deploy_redis_queue_step,
             self._deploy_redis_shared_memory_step,
-            self._deploy_service_broker_resources,
+            self._deploy_rlq_resources,
             self._deploy_system_manager_step,
         ]
         self.pool = ThreadPool(processes=self.config.deployer_manager_pool_size())
@@ -375,7 +375,7 @@ class DeployerManager:
         return result
 
     @step_decorator(step_name='Deploy ServiceBroker Resources')
-    def _deploy_service_broker_resources(self, result: StepResult) -> StepResult:
+    def _deploy_rlq_resources(self, result: StepResult) -> StepResult:
         self.logger.info('Loading and preparing ServiceBroker deployment resources')
         # flower
         flower_resources = load_multiple_yamls_from_file(self.config.flower_deployment_file())
@@ -418,10 +418,10 @@ class DeployerManager:
             self.config.trajectory_collector_deployment_file())
         trajectory_collector_resources = [r for r in trajectory_collector_resources]
 
-        service_broker_resources = flower_resources + task_broker_resources + worker_deployments + \
+        rlq_resources = flower_resources + task_broker_resources + worker_deployments + \
                                    task_generator_resources + agent_resources + trajectory_collector_resources
 
-        for resource in service_broker_resources:
+        for resource in rlq_resources:
             if KubeResource(resource['kind']) == KubeResource.DEPLOYMENT or \
                     KubeResource(resource['kind']) == KubeResource.STATEFUL_SET:
                 self.logger.debug('Updating BROKER_SERVICE_SERVICE_HOST env variable for resource: {}'
@@ -444,7 +444,7 @@ class DeployerManager:
 
         return self._create_kubernetes_resources(
             result=result,
-            kube_resources=service_broker_resources,
+            kube_resources=rlq_resources,
             delete_if_exists=True,
             wait_running=True,
             deployment_kind=KubeResource.DEPLOYMENT

@@ -39,7 +39,7 @@ app = Celery('ServiceBroker',
              # if db changes it has to changes also on flower deployments and deployer_manager at row: 404
              broker=f'redis://{BROKER_SERVICE_HOST}:{BROKER_SERVICE_PORT}/0',
              # backend=f'redis://{BROKER_SERVICE_HOST}:{BROKER_SERVICE_PORT}/0',
-             include=['service_broker.tasks.tasks', 'service_broker.tasks.task_broker'])
+             include=['rlq.tasks.tasks', 'rlq.tasks.task_broker'])
 
 # Optional configuration, see the application user guide.
 app.conf.update(
