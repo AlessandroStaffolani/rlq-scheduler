@@ -1,6 +1,6 @@
-torch
-torchvision
-pandas
-seaborn
-matplotlib
-jupyter
+torch==1.13.1
+torchvision==0.14.1
+pandas==1.5.3
+seaborn==0.12.2
+matplotlib==3.6.3
+jupyter==1.0.0
